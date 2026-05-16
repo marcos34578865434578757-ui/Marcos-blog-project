@@ -15,7 +15,7 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl px-5 py-10 md:py-14">
-        <section className="grid min-h-[520px] items-center gap-10 border-b border-line pb-12 md:grid-cols-[1.1fr_0.9fr]">
+        <section className="grid min-h-[520px] items-center gap-10 border-b border-line pb-12 md:grid-cols-[1fr_1.05fr]">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-sm text-accent-strong">
               <Leaf size={15} />
@@ -28,14 +28,11 @@ export default async function HomePage() {
                 阅读文章
                 <ArrowRight size={16} />
               </Link>
-              <Link className="btn-secondary" href="/admin">
-                进入后台
-              </Link>
             </div>
           </div>
 
-          <aside className="soft-panel p-5">
-            <div className="grid gap-3 sm:grid-cols-2">
+          <aside className="soft-panel self-start p-6 md:-mt-8 md:ml-5 md:min-h-[29rem]">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Feature
                 icon={<BookOpen size={18} />}
                 title="最新文章"
@@ -116,13 +113,13 @@ function Feature({
 }) {
   return (
     <Link
-      className="stagger-card glass-card rounded-md p-4 hover:border-accent"
+      className="stagger-card glass-card min-h-[12rem] rounded-md p-5 hover:border-accent"
       href={href}
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="mb-3 flex size-9 items-center justify-center rounded-md bg-accent-soft text-accent-strong">{icon}</div>
-      <h2 className="font-semibold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+      <div className="mb-4 flex size-11 items-center justify-center rounded-md bg-accent-soft text-accent-strong">{icon}</div>
+      <h2 className="text-[1.05rem] font-semibold">{title}</h2>
+      <p className="mt-3 text-[0.95rem] leading-7 text-muted">{body}</p>
     </Link>
   );
 }
