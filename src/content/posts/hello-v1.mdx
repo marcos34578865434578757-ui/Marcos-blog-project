@@ -1,0 +1,32 @@
+---
+title: "第一篇示例文章"
+slug: "hello-v1"
+date: "2026-05-16"
+description: "用于验证公开博客、Markdown 渲染、RSS 和 sitemap 的示例内容。"
+tags:
+  - Markdown
+  - CMS
+category: "Build Log"
+cover: ""
+status: "published"
+redirectFrom: []
+updatedAt: "2026-05-16T00:00:00.000Z"
+source: "seed"
+---
+
+## 为什么先做 V1
+
+这个站点的第一版目标很明确：让文章从 Markdown 进入后台，经过预览和编辑后发布到 GitHub，再由 Vercel 自动部署。
+
+## 支持的内容
+
+- 标题、列表、引用和链接
+- GFM 表格
+- 代码块
+- 远程图片 URL
+
+```ts
+const workflow = ["import", "draft", "preview", "publish"];
+```
+
+> 草稿不会写入 GitHub，因此保存编辑不会频繁触发部署。
