@@ -6,12 +6,16 @@ const {
   deleteDraftMock,
   getPublishedPostsMock,
   deletePublishedPostFromGithubMock,
+  materializePublishedPostDraftMock,
+  saveDraftMock,
 } = vi.hoisted(() => ({
   requireAdminApiMock: vi.fn(),
   getDraftMock: vi.fn(),
   deleteDraftMock: vi.fn(),
   getPublishedPostsMock: vi.fn(),
   deletePublishedPostFromGithubMock: vi.fn(),
+  materializePublishedPostDraftMock: vi.fn(),
+  saveDraftMock: vi.fn(),
 }));
 
 vi.mock("@/lib/admin/auth", () => ({
@@ -21,10 +25,12 @@ vi.mock("@/lib/admin/auth", () => ({
 vi.mock("@/lib/services/blob-store", () => ({
   getDraft: getDraftMock,
   deleteDraft: deleteDraftMock,
+  saveDraft: saveDraftMock,
 }));
 
 vi.mock("@/lib/content/posts", () => ({
   getPublishedPosts: getPublishedPostsMock,
+  materializePublishedPostDraft: materializePublishedPostDraftMock,
 }));
 
 vi.mock("@/lib/services/github", () => ({
@@ -32,15 +38,17 @@ vi.mock("@/lib/services/github", () => ({
 }));
 
 import { DELETE as deleteDraftRoute } from "./drafts/[slug]/route";
-import { DELETE as deletePublishedRoute } from "./posts/[slug]/route";
+import { DELETE as deletePublishedRoute, POST as materializePublishedRoute } from "./posts/[slug]/route";
 
-describe("admin delete routes", () => {
+describe("admin draft and post routes", () => {
   beforeEach(() => {
     requireAdminApiMock.mockReset();
     getDraftMock.mockReset();
     deleteDraftMock.mockReset();
     getPublishedPostsMock.mockReset();
     deletePublishedPostFromGithubMock.mockReset();
+    materializePublishedPostDraftMock.mockReset();
+    saveDraftMock.mockReset();
   });
 
   it("returns 401 when deleting a draft without an admin session", async () => {
@@ -67,10 +75,43 @@ describe("admin delete routes", () => {
     expect(deleteDraftMock).toHaveBeenCalledWith("hello");
   });
 
+  it("creates a draft from a published article", async () => {
+    requireAdminApiMock.mockResolvedValue(undefined);
+    getDraftMock.mockResolvedValue(null);
+    materializePublishedPostDraftMock.mockResolvedValue({ slug: "hello", title: "Hello" });
+    saveDraftMock.mockResolvedValue({ slug: "hello", title: "Hello" });
+
+    const response = await materializePublishedRoute(new Request("http://localhost/api/admin/posts/hello"), {
+      params: Promise.resolve({ slug: "hello" }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      data: { draft: { slug: "hello", title: "Hello" }, existing: false },
+    });
+  });
+
+  it("reuses an existing draft when materializing a published article", async () => {
+    requireAdminApiMock.mockResolvedValue(undefined);
+    getDraftMock.mockResolvedValue({ slug: "hello", title: "Draft" });
+
+    const response = await materializePublishedRoute(new Request("http://localhost/api/admin/posts/hello"), {
+      params: Promise.resolve({ slug: "hello" }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      data: { draft: { slug: "hello", title: "Draft" }, existing: true },
+    });
+  });
+
   it("deletes an existing published post", async () => {
     requireAdminApiMock.mockResolvedValue(undefined);
     getPublishedPostsMock.mockResolvedValue([{ slug: "hello" }]);
     deletePublishedPostFromGithubMock.mockResolvedValue({ commit: { html_url: "https://github.com/commit/1" } });
+    getDraftMock.mockResolvedValue(null);
 
     const response = await deletePublishedRoute(new Request("http://localhost/api/admin/posts/hello"), {
       params: Promise.resolve({ slug: "hello" }),

@@ -8,16 +8,19 @@ export default async function ImportPage() {
   return (
     <>
       <AdminNav />
-      <main className="mx-auto w-full max-w-6xl px-5 py-10">
-        <section className="soft-panel p-7">
-          <p className="text-sm uppercase tracking-[0.18em] text-accent">Import</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">导入文章</h1>
-          <p className="mt-3 max-w-2xl leading-7 text-muted">
-            支持单个 md/mdx 文件，或一篇文章一个 zip 包。zip 内的本地图片会上传到 Vercel Blob，并自动改写图片引用。
-          </p>
-        </section>
-        <div className="mt-8">
-          <ImportForm />
+      <main className="editor-page">
+        <div className="mx-auto w-full max-w-7xl px-5 py-8">
+          <section className="editor-card max-w-4xl p-8">
+            <p className="text-sm uppercase tracking-[0.18em] text-accent">Import</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">导入文章</h1>
+            <p className="mt-3 max-w-2xl leading-7 text-muted">
+              支持单个 md/mdx 文件，或包含正文与本地图片的 zip 包。导入成功后会自动创建草稿，并进入编辑页。
+            </p>
+          </section>
+
+          <div className="mt-8">
+            <ImportForm />
+          </div>
         </div>
       </main>
     </>

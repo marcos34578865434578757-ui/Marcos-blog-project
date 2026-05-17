@@ -1,13 +1,56 @@
 import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
-import { draftPostSchema, type DraftAsset, type DraftPost } from "@/lib/content/types";
 import { slugify } from "@/lib/content/slug";
+import {
+  draftPostSchema,
+  normalizeCategory,
+  type DraftAsset,
+  type DraftAssetSource,
+  type DraftPost,
+} from "@/lib/content/types";
 
 const draftsPrefix = "drafts/";
+
+export class DraftSlugConflictError extends Error {
+  constructor(slug: string) {
+    super(`Draft with slug "${slug}" already exists`);
+  }
+}
 
 function requireBlobToken() {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is missing");
   }
+}
+
+function normalizeDraft(draft: unknown) {
+  const input = draft as DraftPost & { assets?: Array<DraftAsset & { source?: string }> };
+  return draftPostSchema.parse({
+    ...input,
+    category: normalizeCategory(input.category),
+    assets: (input.assets ?? []).map((asset) => ({
+      ...asset,
+      source: (() => {
+        const source = (asset as { source?: string }).source;
+        return source === "upload" ? "content" : (source ?? "content");
+      })(),
+    })),
+  });
+}
+
+async function readDraftByPath(pathname: string) {
+  try {
+    const blob = await head(pathname);
+    const response = await fetch(blob.url, { cache: "no-store" });
+    if (!response.ok) return null;
+    return normalizeDraft(await response.json());
+  } catch (error) {
+    if (error instanceof BlobNotFoundError) return null;
+    throw error;
+  }
+}
+
+async function draftExists(slug: string) {
+  return (await readDraftByPath(draftPath(slug))) !== null;
 }
 
 export function draftPath(slug: string) {
@@ -23,7 +66,7 @@ export async function listDrafts() {
       .map(async (blob) => {
         const response = await fetch(blob.url, { cache: "no-store" });
         if (!response.ok) return null;
-        return draftPostSchema.parse(await response.json());
+        return normalizeDraft(await response.json());
       }),
   );
 
@@ -34,23 +77,22 @@ export async function listDrafts() {
 
 export async function getDraft(slug: string) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
-
-  try {
-    const blob = await head(draftPath(slug));
-    const response = await fetch(blob.url, { cache: "no-store" });
-    if (!response.ok) return null;
-    return draftPostSchema.parse(await response.json());
-  } catch (error) {
-    if (error instanceof BlobNotFoundError) return null;
-    throw error;
-  }
+  return readDraftByPath(draftPath(slug));
 }
 
-export async function saveDraft(input: DraftPost) {
+export async function saveDraft(input: DraftPost, options?: { previousSlug?: string }) {
   requireBlobToken();
+  const nextSlug = slugify(input.slug || input.title);
+  const previousSlug = options?.previousSlug ? slugify(options.previousSlug) : undefined;
+
+  if (previousSlug && previousSlug !== nextSlug && (await draftExists(nextSlug))) {
+    throw new DraftSlugConflictError(nextSlug);
+  }
+
   const draft = draftPostSchema.parse({
     ...input,
-    slug: slugify(input.slug || input.title),
+    slug: nextSlug,
+    category: normalizeCategory(input.category),
     status: "draft",
     updatedAt: new Date().toISOString(),
     assets: input.assets ?? [],
@@ -61,6 +103,10 @@ export async function saveDraft(input: DraftPost) {
     contentType: "application/json",
     allowOverwrite: true,
   });
+
+  if (previousSlug && previousSlug !== draft.slug) {
+    await del(draftPath(previousSlug));
+  }
 
   return draft;
 }
@@ -74,7 +120,7 @@ export async function uploadPostAsset(params: {
   slug: string;
   file: Blob;
   filename: string;
-  source: DraftAsset["source"];
+  source: DraftAssetSource;
   originalPath?: string;
 }) {
   requireBlobToken();
