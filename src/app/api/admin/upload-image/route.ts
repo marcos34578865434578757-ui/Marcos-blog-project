@@ -1,5 +1,6 @@
 import { fail, getErrorMessage, ok } from "@/lib/admin/api";
 import { requireAdminApi } from "@/lib/admin/auth";
+import { draftAssetSourceSchema } from "@/lib/content/types";
 import { uploadPostAsset } from "@/lib/services/blob-store";
 
 export async function POST(request: Request) {
@@ -8,6 +9,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file");
     const slug = String(formData.get("slug") ?? "draft");
+    const source = draftAssetSourceSchema.parse(formData.get("source") ?? "content");
 
     if (!(file instanceof File)) {
       return fail("Image file is required");
@@ -22,7 +24,7 @@ export async function POST(request: Request) {
         slug,
         file,
         filename: file.name,
-        source: "upload",
+        source,
       }),
     );
   } catch (error) {

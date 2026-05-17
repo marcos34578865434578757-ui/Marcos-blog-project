@@ -39,7 +39,7 @@ export function DeletePostButton({ slug, kind }: DeletePostButtonProps) {
   return (
     <div className="flex flex-col items-start gap-1">
       <button
-        className="inline-flex items-center gap-2 text-sm font-medium text-warn hover:text-warn disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center gap-2 text-sm font-medium text-warn transition hover:text-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
         onClick={() => void onDelete()}
         disabled={isDeleting}

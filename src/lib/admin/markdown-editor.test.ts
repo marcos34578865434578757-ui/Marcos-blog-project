@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { applyMarkdownCommand } from "./markdown-editor";
+import { applyMarkdownCommand, insertTextAtSelection, parseTagInput } from "./markdown-editor";
 
-describe("applyMarkdownCommand", () => {
+describe("markdown editor helpers", () => {
   it("wraps selected text with emphasis markers", () => {
     const result = applyMarkdownCommand(
       {
@@ -53,5 +53,24 @@ describe("applyMarkdownCommand", () => {
     expect(result.value).toBe("```\ncode block\n```");
     expect(result.selectionStart).toBe(4);
     expect(result.selectionEnd).toBe(14);
+  });
+
+  it("inserts arbitrary text at the stored cursor position", () => {
+    const result = insertTextAtSelection(
+      {
+        value: "Hello world",
+        selectionStart: 6,
+        selectionEnd: 11,
+      },
+      "planet",
+    );
+
+    expect(result.value).toBe("Hello planet");
+    expect(result.selectionStart).toBe(12);
+    expect(result.selectionEnd).toBe(12);
+  });
+
+  it("parses tag input with enter, English comma, and Chinese comma semantics", () => {
+    expect(parseTagInput("react, next， cms\nblog")).toEqual(["react", "next", "cms", "blog"]);
   });
 });

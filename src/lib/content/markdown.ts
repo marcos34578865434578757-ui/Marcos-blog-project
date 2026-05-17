@@ -1,5 +1,5 @@
 import matter from "gray-matter";
-import { postMetaSchema, type DraftPost, type PostMeta } from "./types";
+import { normalizeCategory, postMetaSchema, type DraftPost, type PostMeta } from "./types";
 import { slugify } from "./slug";
 
 export function parseMarkdownFile(raw: string, fallbackTitle = "Untitled draft") {
@@ -12,7 +12,7 @@ export function parseMarkdownFile(raw: string, fallbackTitle = "Untitled draft")
     date: data.date ? String(data.date) : new Date().toISOString().slice(0, 10),
     description: data.description ? String(data.description) : "",
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    category: data.category ? String(data.category) : "Notes",
+    category: normalizeCategory(data.category ? String(data.category) : undefined),
     cover: data.cover ? String(data.cover) : "",
     status: data.status === "published" ? "published" : "draft",
     redirectFrom: Array.isArray(data.redirectFrom) ? data.redirectFrom.map(String) : [],
@@ -33,7 +33,7 @@ export function serializePost(meta: PostMeta, content: string) {
     date: meta.date,
     description: meta.description,
     tags: meta.tags,
-    category: meta.category,
+    category: normalizeCategory(meta.category),
     cover: meta.cover,
     status: meta.status,
     redirectFrom: meta.redirectFrom ?? [],
@@ -46,6 +46,7 @@ export function draftToMdx(draft: DraftPost) {
   return serializePost(
     {
       ...draft,
+      category: normalizeCategory(draft.category),
       status: "published",
       updatedAt: new Date().toISOString(),
     },

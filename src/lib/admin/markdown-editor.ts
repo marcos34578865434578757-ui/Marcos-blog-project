@@ -87,6 +87,16 @@ function wrapBlock(input: EditorSelection, fence: string, placeholder: string): 
   };
 }
 
+export function insertTextAtSelection(input: EditorSelection, text: string): EditorEditResult {
+  const value = input.value.slice(0, input.selectionStart) + text + input.value.slice(input.selectionEnd);
+  const cursor = input.selectionStart + text.length;
+  return {
+    value,
+    selectionStart: cursor,
+    selectionEnd: cursor,
+  };
+}
+
 export function applyMarkdownCommand(input: EditorSelection, command: MarkdownCommand): EditorEditResult {
   switch (command) {
     case "h2":
@@ -110,6 +120,13 @@ export function applyMarkdownCommand(input: EditorSelection, command: MarkdownCo
     case "link":
       return replaceSelection(input, "[", "链接文本", "](https://example.com)");
     case "image":
-      return replaceSelection(input, "![", "图片描述", "](https://example.com/image.png)");
+      return replaceSelection(input, "![", "图片说明", "](https://example.com/image.png)");
   }
+}
+
+export function parseTagInput(value: string) {
+  return value
+    .split(/[,\n，]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }

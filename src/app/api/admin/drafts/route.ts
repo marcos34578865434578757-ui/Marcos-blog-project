@@ -1,7 +1,13 @@
 import { fail, getErrorMessage, ok } from "@/lib/admin/api";
 import { requireAdminApi } from "@/lib/admin/auth";
 import { draftPostSchema } from "@/lib/content/types";
-import { listDrafts, saveDraft } from "@/lib/services/blob-store";
+import { DraftSlugConflictError, listDrafts, saveDraft } from "@/lib/services/blob-store";
+
+function getStatusCode(error: unknown) {
+  if (error instanceof Error && error.message === "Unauthorized") return 401;
+  if (error instanceof DraftSlugConflictError) return 409;
+  return 400;
+}
 
 export async function GET() {
   try {
@@ -18,6 +24,6 @@ export async function POST(request: Request) {
     const input = draftPostSchema.parse(await request.json());
     return ok(await saveDraft(input));
   } catch (error) {
-    return fail(getErrorMessage(error), error instanceof Error && error.message === "Unauthorized" ? 401 : 400);
+    return fail(getErrorMessage(error), getStatusCode(error));
   }
 }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deletePublishedPostFromGithub } from "./github";
+import { deletePublishedPostFromGithub, publishDraftToGithub } from "./github";
 
 describe("deletePublishedPostFromGithub", () => {
   beforeEach(() => {
@@ -41,5 +41,50 @@ describe("deletePublishedPostFromGithub", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("not found", { status: 404 }));
 
     await expect(deletePublishedPostFromGithub("missing")).resolves.toBeNull();
+  });
+
+  it("reuses an existing .md file path when publishing a copied draft", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+
+      if (!init?.method && url.includes("/hello.mdx")) {
+        return new Response("not found", { status: 404 });
+      }
+
+      if (!init?.method && url.includes("/hello.md")) {
+        return new Response(JSON.stringify({ sha: "md-sha" }), { status: 200 });
+      }
+
+      expect(init?.method).toBe("PUT");
+      expect(url).toContain("/repos/owner/repo/contents/src/content/posts/hello.md");
+      expect(init?.body).toContain("\"sha\":\"md-sha\"");
+
+      return new Response(
+        JSON.stringify({
+          content: { path: "src/content/posts/hello.md", sha: "new-sha" },
+          commit: { html_url: "https://github.com/commit/2" },
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await publishDraftToGithub({
+      title: "Hello",
+      slug: "hello",
+      date: "2026-05-17",
+      description: "",
+      tags: [],
+      category: "未分类",
+      cover: "",
+      status: "draft",
+      redirectFrom: [],
+      updatedAt: "2026-05-17T00:00:00.000Z",
+      source: "admin",
+      content: "Test",
+      assets: [],
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.content.path).toBe("src/content/posts/hello.md");
   });
 });

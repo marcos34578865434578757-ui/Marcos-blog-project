@@ -3,7 +3,7 @@ import path from "node:path";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { estimateReadingTime, parseMarkdownFile } from "./markdown";
-import type { PublishedPost } from "./types";
+import { normalizeCategory, type DraftPost, type PublishedPost } from "./types";
 
 const postsDir = path.join(process.cwd(), "src", "content", "posts");
 
@@ -16,6 +16,22 @@ async function readPostFiles() {
   }
 }
 
+async function resolvePublishedPostFile(slug: string) {
+  const candidates = [`${slug}.mdx`, `${slug}.md`];
+
+  for (const candidate of candidates) {
+    const pathname = path.join(postsDir, candidate);
+    try {
+      await fs.access(pathname);
+      return pathname;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
 export const getPublishedPosts = cache(async (): Promise<PublishedPost[]> => {
   const files = await readPostFiles();
   const posts = await Promise.all(
@@ -26,6 +42,7 @@ export const getPublishedPosts = cache(async (): Promise<PublishedPost[]> => {
 
       return {
         ...meta,
+        category: normalizeCategory(meta.category),
         status: "published" as const,
         content,
         readingTime: estimateReadingTime(content),
@@ -45,9 +62,27 @@ export async function getPublishedPost(slug: string) {
   return post;
 }
 
+export async function materializePublishedPostDraft(slug: string): Promise<DraftPost | null> {
+  const pathname = await resolvePublishedPostFile(slug);
+  if (!pathname) return null;
+
+  const raw = await fs.readFile(pathname, "utf8");
+  const { meta, content } = parseMarkdownFile(raw, slug);
+
+  return {
+    ...meta,
+    category: normalizeCategory(meta.category),
+    status: "draft",
+    content,
+    assets: [],
+    updatedAt: new Date().toISOString(),
+    source: "published",
+  };
+}
+
 export async function getCategories() {
   const posts = await getPublishedPosts();
-  return [...new Set(posts.map((post) => post.category).filter(Boolean))].sort();
+  return [...new Set(posts.map((post) => normalizeCategory(post.category)).filter(Boolean))].sort();
 }
 
 export async function getTags() {

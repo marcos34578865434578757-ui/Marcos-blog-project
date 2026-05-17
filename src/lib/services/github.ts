@@ -72,8 +72,9 @@ async function resolvePublishedPost(pathOrSlug: string) {
 
 export async function publishDraftToGithub(draft: DraftPost) {
   const { owner, repo, branch } = getGithubConfig();
-  const pathname = `src/content/posts/${ensureMdxFilename(draft.slug)}`;
-  const sha = await getExistingFileSha(pathname);
+  const resolved = await resolvePublishedPost(draft.slug);
+  const pathname = resolved?.pathname ?? `src/content/posts/${ensureMdxFilename(draft.slug)}`;
+  const sha = resolved?.sha ?? (await getExistingFileSha(pathname));
   const content = draftToMdx(draft);
   const body: Record<string, unknown> = {
     message: `Publish post: ${draft.title}`,

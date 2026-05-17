@@ -13,26 +13,28 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <AdminNav />
-      <main className="mx-auto w-full max-w-6xl px-5 py-10">
-        <section className="soft-panel p-7">
-          <p className="text-sm uppercase tracking-[0.18em] text-accent">Dashboard</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">内容后台</h1>
-          <p className="mt-3 max-w-2xl leading-7 text-muted">
-            草稿保存到 Vercel Blob，点击发布时才会写入 GitHub，并触发线上部署。
-          </p>
-        </section>
+      <main className="editor-page">
+        <div className="mx-auto w-full max-w-7xl px-5 py-8">
+          <section className="editor-card p-8">
+            <p className="text-sm uppercase tracking-[0.18em] text-accent">Dashboard</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">内容后台</h1>
+            <p className="mt-3 max-w-2xl leading-7 text-muted">
+              草稿保存在 Vercel Blob，点击发布时才会写入 GitHub，并触发线上部署。
+            </p>
+          </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <Stat label="已发布" value={published.length} />
-          <Stat label="草稿" value={drafts.length} />
-          <Stat label="总文章" value={published.length + drafts.length} />
-        </section>
+          <section className="mt-6 grid gap-4 md:grid-cols-3">
+            <Stat label="已发布" value={published.length} />
+            <Stat label="草稿" value={drafts.length} />
+            <Stat label="总文章" value={published.length + drafts.length} />
+          </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <AdminAction href="/admin/posts" icon={<FileText size={20} />} title="管理文章" body="查看 Blob 草稿和仓库中的已发布文章。" />
-          <AdminAction href="/admin/posts/new" icon={<PenLine size={20} />} title="新建草稿" body="用 Markdown 开始写一篇新文章。" />
-          <AdminAction href="/admin/import" icon={<Import size={20} />} title="导入文章" body="上传 md、mdx 或单篇 zip 包。" />
-        </section>
+          <section className="mt-6 grid gap-4 md:grid-cols-3">
+            <AdminAction href="/admin/posts" icon={<FileText size={20} />} title="管理文章" body="查看草稿、已发布文章，以及从已发布文章复制草稿。" />
+            <AdminAction href="/admin/posts/new" icon={<PenLine size={20} />} title="新建草稿" body="进入新的玻璃拟态写作工作台，开始撰写文章。" />
+            <AdminAction href="/admin/import" icon={<Import size={20} />} title="导入文章" body="上传 md、mdx 或单篇 zip 包，导入后直接进入编辑页。" />
+          </section>
+        </div>
       </main>
     </>
   );
@@ -40,7 +42,7 @@ export default async function AdminDashboardPage() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-line bg-surface p-5">
+    <div className="editor-card p-5">
       <p className="text-sm text-muted">{label}</p>
       <p className="mt-2 font-mono text-4xl font-semibold text-accent-strong">{value}</p>
     </div>
@@ -49,9 +51,11 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 function AdminAction({ href, icon, title, body }: { href: string; icon: ReactNode; title: string; body: string }) {
   return (
-    <Link className="group rounded-md border border-line bg-surface p-5 hover:border-accent hover:bg-surface-soft" href={href}>
-      <div className="mb-4 flex size-10 items-center justify-center rounded-md bg-accent-soft text-accent-strong">{icon}</div>
-      <h2 className="flex items-center justify-between font-semibold">
+    <Link className="editor-card group p-5 transition hover:-translate-y-1" href={href}>
+      <div className="mb-4 flex size-11 items-center justify-center rounded-2xl border border-white/70 bg-white/55 text-accent-strong">
+        {icon}
+      </div>
+      <h2 className="flex items-center justify-between font-semibold text-foreground">
         {title}
         <ArrowRight className="text-muted transition group-hover:translate-x-0.5 group-hover:text-accent" size={16} />
       </h2>
