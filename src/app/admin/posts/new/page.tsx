@@ -11,7 +11,7 @@ export default async function NewPostPage() {
       <main className="mx-auto w-full max-w-6xl px-5 py-10">
         <p className="text-sm uppercase tracking-[0.18em] text-accent">Editor</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">新建草稿</h1>
-        <p className="mt-2 text-muted">保存草稿会写入 Vercel Blob，不会触发部署。</p>
+        <p className="mt-2 text-muted">保存草稿只会写入 Vercel Blob，不会触发线上部署。</p>
         <div className="mt-8">
           <PostEditor />
         </div>

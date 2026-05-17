@@ -30,9 +30,9 @@ export function ImportForm() {
     }
 
     const unresolved = result.data.unresolvedAssets?.length
-      ? `，但有 ${result.data.unresolvedAssets.length} 个本地图片未匹配`
+      ? `，但还有 ${result.data.unresolvedAssets.length} 个本地资源未匹配`
       : "";
-    setMessage(`已创建草稿${unresolved}`);
+    setMessage(`已创建草稿，正在进入编辑页${unresolved}`);
     router.push(`/admin/posts/${result.data.draft.slug}/edit`);
     router.refresh();
   }
@@ -43,22 +43,11 @@ export function ImportForm() {
         <label className="block text-sm font-medium text-muted" htmlFor="file">
           Markdown 或 zip 文件
         </label>
-        <input
-          id="file"
-          name="file"
-          type="file"
-          accept=".md,.mdx,.zip"
-          required
-          className="field-control mt-2"
-        />
+        <input id="file" name="file" type="file" accept=".md,.mdx,.zip" required className="field-control mt-2" />
       </div>
       {error ? <p className="text-sm text-warn">{error}</p> : null}
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="btn-primary"
-      >
+      <button type="submit" disabled={isLoading} className="btn-primary">
         <Upload size={16} />
         {isLoading ? "导入中..." : "导入为草稿"}
       </button>

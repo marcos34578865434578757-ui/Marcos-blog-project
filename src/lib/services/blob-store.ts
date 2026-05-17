@@ -1,4 +1,4 @@
-import { list, put, del } from "@vercel/blob";
+import { BlobNotFoundError, del, head, list, put } from "@vercel/blob";
 import { draftPostSchema, type DraftAsset, type DraftPost } from "@/lib/content/types";
 import { slugify } from "@/lib/content/slug";
 
@@ -33,8 +33,17 @@ export async function listDrafts() {
 }
 
 export async function getDraft(slug: string) {
-  const drafts = await listDrafts();
-  return drafts.find((draft) => draft.slug === slug || draftPath(draft.slug) === draftPath(slug)) ?? null;
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+
+  try {
+    const blob = await head(draftPath(slug));
+    const response = await fetch(blob.url, { cache: "no-store" });
+    if (!response.ok) return null;
+    return draftPostSchema.parse(await response.json());
+  } catch (error) {
+    if (error instanceof BlobNotFoundError) return null;
+    throw error;
+  }
 }
 
 export async function saveDraft(input: DraftPost) {

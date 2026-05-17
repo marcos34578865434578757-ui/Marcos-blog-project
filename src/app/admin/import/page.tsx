@@ -13,7 +13,7 @@ export default async function ImportPage() {
           <p className="text-sm uppercase tracking-[0.18em] text-accent">Import</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">导入文章</h1>
           <p className="mt-3 max-w-2xl leading-7 text-muted">
-            支持单个 md/mdx 文件，或一篇文章一个 zip 包。zip 内的本地图片会上传到 Vercel Blob 并改写引用。
+            支持单个 md/mdx 文件，或一篇文章一个 zip 包。zip 内的本地图片会上传到 Vercel Blob，并自动改写图片引用。
           </p>
         </section>
         <div className="mt-8">
