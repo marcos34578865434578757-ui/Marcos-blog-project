@@ -1,12 +1,7 @@
 import { z } from "zod";
+import { DEFAULT_CATEGORY, normalizeCategory } from "./categories";
 
-export const DEFAULT_CATEGORY = "未分类";
-
-export function normalizeCategory(value?: string | null) {
-  const input = value?.trim();
-  if (!input || input === "Notes") return DEFAULT_CATEGORY;
-  return input;
-}
+export { DEFAULT_CATEGORY, normalizeCategory } from "./categories";
 
 export const postStatusSchema = z.enum(["draft", "published"]);
 
@@ -16,7 +11,7 @@ export const postMetaSchema = z.object({
   date: z.string().min(1, "Date is required"),
   description: z.string().default(""),
   tags: z.array(z.string()).default([]),
-  category: z.string().default(DEFAULT_CATEGORY),
+  category: z.string().default(DEFAULT_CATEGORY).transform((value) => normalizeCategory(value)),
   cover: z.string().default(""),
   status: postStatusSchema.default("draft"),
   redirectFrom: z.array(z.string()).default([]),
@@ -49,6 +44,4 @@ export type PublishedPost = PostMeta & {
   readingTime: number;
 };
 
-export type ApiResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string };

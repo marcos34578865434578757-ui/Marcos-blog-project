@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AlertTriangle, CheckCircle2, Loader2, Save, Send, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
@@ -11,7 +11,8 @@ import { MetaPanel } from "@/components/admin/MetaPanel";
 import { MarkdownBody } from "@/components/markdown/MarkdownBody";
 import type { AdminCapabilities } from "@/lib/admin/health";
 import { applyMarkdownCommand, insertTextAtSelection, type MarkdownCommand } from "@/lib/admin/markdown-editor";
-import { DEFAULT_CATEGORY, normalizeCategory, type DraftAsset, type DraftPost } from "@/lib/content/types";
+import { normalizeCategory } from "@/lib/content/categories";
+import { DEFAULT_CATEGORY, type DraftAsset, type DraftPost } from "@/lib/content/types";
 import { slugify } from "@/lib/content/slug";
 
 const emptyDraft: DraftPost = {
@@ -62,6 +63,7 @@ function upsertAsset(assets: DraftAsset[], nextAsset: DraftAsset) {
 export function PostEditor(props: {
   initialDraft?: DraftPost | null;
   initialCapabilities: AdminCapabilities;
+  initialCategories: string[];
   mode: "new" | "edit";
 }) {
   const router = useRouter();
@@ -86,6 +88,12 @@ export function PostEditor(props: {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData>({ headings: [], warnings: [] });
+
+  const categoryOptions = useMemo(() => {
+    return [...new Set(props.initialCategories.map((item) => normalizeCategory(item)).filter(Boolean))].sort((left, right) =>
+      left.localeCompare(right, "zh-CN"),
+    );
+  }, [props.initialCategories]);
 
   const blobUnavailable = !props.initialCapabilities.blobConfigured;
   const githubUnavailable = !props.initialCapabilities.githubConfigured;
@@ -191,7 +199,7 @@ export function PostEditor(props: {
 
     const nextSlug = slugify(draft.slug || draft.title);
     if (!nextSlug) {
-      setError("slug 不能为空。");
+      setError("Slug 不能为空。");
       return false;
     }
 
@@ -232,7 +240,7 @@ export function PostEditor(props: {
     setIsSaving(false);
 
     if (!result.ok) {
-      setError(result.error ?? "保存失败");
+      setError(result.error ?? "淇濆瓨澶辫触");
       return null;
     }
 
@@ -278,7 +286,7 @@ export function PostEditor(props: {
     setIsPublishing(false);
 
     if (!result.ok) {
-      setError(result.error ?? "发布失败");
+      setError(result.error ?? "鍙戝竷澶辫触");
       return;
     }
 
@@ -310,7 +318,7 @@ export function PostEditor(props: {
     }
 
     if (!result.ok) {
-      setError(result.error ?? "上传失败");
+      setError(result.error ?? "涓婁紶澶辫触");
       return;
     }
 
@@ -324,7 +332,7 @@ export function PostEditor(props: {
     }
 
     patch({ assets: nextAssets });
-    insertContentAtLastSelection(`![图片说明](${asset.url})`);
+    insertContentAtLastSelection(`![鍥剧墖璇存槑](${asset.url})`);
     setMessage("图片已上传并插入正文。");
   }
 
@@ -339,7 +347,7 @@ export function PostEditor(props: {
     setIsPreviewLoading(false);
 
     if (!result.ok) {
-      setError(result.error ?? "预览信息加载失败");
+      setError(result.error ?? "棰勮淇℃伅鍔犺浇澶辫触");
       return;
     }
 
@@ -353,7 +361,7 @@ export function PostEditor(props: {
   }
 
   function onImportClick() {
-    if (hasUnsavedChanges && !window.confirm("当前有未保存内容，确定现在去导入页面吗？")) {
+    if (hasUnsavedChanges && !window.confirm("褰撳墠鏈夋湭淇濆瓨鍐呭锛岀‘瀹氱幇鍦ㄥ幓瀵煎叆椤甸潰鍚楋紵")) {
       return;
     }
 
@@ -368,7 +376,7 @@ export function PostEditor(props: {
   }
 
   function onInsertAsset(asset: DraftAsset) {
-    insertContentAtLastSelection(`![图片说明](${asset.url})`);
+    insertContentAtLastSelection(`![鍥剧墖璇存槑](${asset.url})`);
     setMessage("图片链接已插入正文。");
   }
 
@@ -459,7 +467,7 @@ export function PostEditor(props: {
       <header className="editor-topbar">
         <div className="flex items-center gap-4">
           <div className="grid size-14 place-items-center rounded-[20px] border border-white/75 bg-white/55 text-xl shadow-[0_18px_56px_rgba(71,110,91,0.12)] backdrop-blur-xl">
-            ✍️
+            ✍
           </div>
           <div>
             <p className="text-sm uppercase tracking-[0.18em] text-accent">Writer Studio</p>
@@ -586,12 +594,13 @@ export function PostEditor(props: {
           <MetaPanel
             description={draft.description}
             category={draft.category}
+            categoryOptions={categoryOptions}
             date={toDateTimeLocalValue(draft.date)}
             tags={draft.tags}
             tagInput={tagInput}
             draftOnly={draftOnly}
             onDescriptionChange={(value) => patch({ description: value })}
-            onCategoryChange={(value) => patch({ category: value || "未分类" })}
+            onCategoryChange={(value) => patch({ category: value || DEFAULT_CATEGORY })}
             onDateChange={(value) => patch({ date: value })}
             onTagInputChange={setTagInput}
             onAddTags={addTags}
@@ -665,7 +674,7 @@ export function PostEditor(props: {
               <article className="editor-card prose-blog min-h-[60vh] p-6">
                 <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
                   <span>{normalizeCategory(draft.category)}</span>
-                  <span>•</span>
+                  <span>·</span>
                   <span>{draft.tags.length > 0 ? draft.tags.join(" / ") : "无标签"}</span>
                 </div>
                 <h1>{draft.title || "Untitled"}</h1>
@@ -705,3 +714,4 @@ function StatusBanner(props: {
     </section>
   );
 }
+
