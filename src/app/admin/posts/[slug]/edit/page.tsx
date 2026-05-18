@@ -3,12 +3,13 @@ import { AdminNav } from "@/components/admin/AdminNav";
 import { PostEditor } from "@/components/admin/PostEditor";
 import { requireAdmin } from "@/lib/admin/auth";
 import { getAdminCapabilities } from "@/lib/admin/health";
+import { getAdminCategories } from "@/lib/content/posts";
 import { getDraft } from "@/lib/services/blob-store";
 
 export default async function EditPostPage({ params }: { params: Promise<{ slug: string }> }) {
   await requireAdmin();
   const { slug } = await params;
-  const draft = await getDraft(slug);
+  const [draft, categories] = await Promise.all([getDraft(slug), getAdminCategories()]);
 
   return (
     <>
@@ -16,7 +17,12 @@ export default async function EditPostPage({ params }: { params: Promise<{ slug:
       <main className="editor-page">
         <div className="mx-auto w-full max-w-7xl px-5 py-8">
           {draft ? (
-            <PostEditor initialCapabilities={getAdminCapabilities()} initialDraft={draft} mode="edit" />
+            <PostEditor
+              initialCapabilities={getAdminCapabilities()}
+              initialCategories={categories}
+              initialDraft={draft}
+              mode="edit"
+            />
           ) : (
             <section className="editor-card mx-auto max-w-3xl space-y-5 p-8">
               <div>

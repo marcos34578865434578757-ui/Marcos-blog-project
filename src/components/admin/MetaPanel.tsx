@@ -6,6 +6,7 @@ import { parseTagInput } from "@/lib/admin/markdown-editor";
 export function MetaPanel(props: {
   description: string;
   category: string;
+  categoryOptions: string[];
   date: string;
   tags: string[];
   tagInput: string;
@@ -48,10 +49,17 @@ export function MetaPanel(props: {
         {props.tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {props.tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/55 px-3 py-1 text-sm text-foreground">
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/55 px-3 py-1 text-sm text-foreground"
+              >
                 <Tag size={12} />
                 {tag}
-                <button type="button" className="text-muted transition hover:text-foreground" onClick={() => props.onRemoveTag(tag)}>
+                <button
+                  type="button"
+                  className="text-muted transition hover:text-foreground"
+                  onClick={() => props.onRemoveTag(tag)}
+                >
                   <X size={12} />
                 </button>
               </span>
@@ -73,15 +81,47 @@ export function MetaPanel(props: {
         />
       </div>
 
-      <label className="block space-y-2 text-sm">
-        <span className="font-medium text-muted">分类</span>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-medium text-muted">分类</span>
+          <span className="text-xs text-muted">可选已有分类，也可以直接输入新的分类名</span>
+        </div>
+
+        {props.categoryOptions.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {props.categoryOptions.map((option) => {
+              const active = option === props.category;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                    active
+                      ? "border-accent bg-accent-soft text-accent-strong"
+                      : "border-white/70 bg-white/55 text-foreground hover:border-accent/60 hover:text-accent-strong"
+                  }`}
+                  onClick={() => props.onCategoryChange(option)}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
         <input
           className="editor-input"
+          list="admin-category-options"
           value={props.category}
           onChange={(event) => props.onCategoryChange(event.target.value)}
           placeholder="未分类"
         />
-      </label>
+        <datalist id="admin-category-options">
+          {props.categoryOptions.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
+      </div>
 
       <label className="block space-y-2 text-sm">
         <span className="font-medium text-muted">日期</span>

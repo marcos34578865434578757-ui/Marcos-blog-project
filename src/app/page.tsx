@@ -5,10 +5,13 @@ import { AnimatedHeroSubtitle } from "@/components/AnimatedHeroSubtitle";
 import { AnimatedHeroTitle } from "@/components/AnimatedHeroTitle";
 import { PostCard } from "@/components/PostCard";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getCategories, getPublishedPosts } from "@/lib/content/posts";
+import { categoryToQueryValue } from "@/lib/content/categories";
+import { getPublicCategories, getPublishedPosts } from "@/lib/content/posts";
+
+const HOME_CATEGORY_LIMIT = 10;
 
 export default async function HomePage() {
-  const [posts, categories] = await Promise.all([getPublishedPosts(), getCategories()]);
+  const [posts, categories] = await Promise.all([getPublishedPosts(), getPublicCategories()]);
   const latest = posts.slice(0, 4);
 
   return (
@@ -75,7 +78,7 @@ export default async function HomePage() {
             {latest.length > 0 ? (
               latest.map((post) => <PostCard key={post.slug} post={post} />)
             ) : (
-              <p className="text-muted">还没有发布文章。可以先进入后台导入 Markdown，发布后会出现在这里。</p>
+              <p className="text-muted">还没有发布文章。先去后台创建或导入内容，发布后就会出现在这里。</p>
             )}
           </div>
         </section>
@@ -85,8 +88,12 @@ export default async function HomePage() {
             <p className="text-sm uppercase tracking-[0.18em] text-accent">Topics</p>
             <h2 className="mt-2 text-2xl font-semibold">分类</h2>
             <div className="mt-5 flex flex-wrap gap-3">
-              {categories.map((category) => (
-                <Link key={category} className="btn-secondary" href={`/posts?category=${encodeURIComponent(category)}`}>
+              {categories.slice(0, HOME_CATEGORY_LIMIT).map((category) => (
+                <Link
+                  key={category}
+                  className="btn-secondary"
+                  href={`/posts?category=${encodeURIComponent(categoryToQueryValue(category))}`}
+                >
                   {category}
                 </Link>
               ))}

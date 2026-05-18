@@ -1,52 +1,25 @@
 import type { Metadata } from "next";
 import { Boxes } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { CategoryArchivePage } from "@/components/CategoryArchivePage";
+import { getPublishedPostsForSection } from "@/lib/content/posts";
 
 export const metadata: Metadata = {
   title: "项目展示",
+  description: "查看归档在“项目展示”分类下的已发布文章与实践记录。",
 };
 
-const projects = [
-  {
-    title: "Personal Blog CMS",
-    body: "Vercel-first 的个人博客与轻量后台，支持 Markdown 导入、Blob 草稿和 GitHub 发布。",
-    status: "Building",
-  },
-  {
-    title: "Writing Workflow",
-    body: "围绕 Obsidian、飞书和 Markdown 的长期写作迁移流程。",
-    status: "Planning",
-  },
-];
+export default async function ProjectsPage() {
+  const posts = await getPublishedPostsForSection("projects");
 
-export default function ProjectsPage() {
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-5 py-12">
-        <section className="soft-panel p-8">
-          <div className="mb-5 flex size-11 items-center justify-center rounded-md bg-accent-soft text-accent-strong">
-            <Boxes size={21} />
-          </div>
-          <p className="text-sm uppercase tracking-[0.18em] text-accent">Projects</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">项目展示</h1>
-          <p className="mt-4 max-w-2xl leading-7 text-muted">这里会整理正在推进的产品、网站和自动化实验。</p>
-        </section>
-
-        <section className="mt-8 grid gap-4 md:grid-cols-2">
-          {projects.map((project, index) => (
-            <article
-              key={project.title}
-              className="stagger-card rounded-md border border-line bg-surface p-5 hover:border-accent hover:bg-surface-soft"
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <span className="status-pill">{project.status}</span>
-              <h2 className="mt-4 text-xl font-semibold">{project.title}</h2>
-              <p className="mt-3 leading-7 text-muted">{project.body}</p>
-            </article>
-          ))}
-        </section>
-      </main>
-    </>
+    <CategoryArchivePage
+      eyebrow="Projects"
+      title="项目展示"
+      description="整理正在做、已经完成，或值得复盘的产品、网站与实验。"
+      icon={<Boxes size={21} />}
+      posts={posts}
+      emptyTitle="还没有项目展示文章"
+      emptyBody="等你发布归类到“项目展示”的文章后，这里就会开始形成一个项目归档页。"
+    />
   );
 }

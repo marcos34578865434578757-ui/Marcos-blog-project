@@ -2,8 +2,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { listDrafts } from "@/lib/services/blob-store";
 import { estimateReadingTime, parseMarkdownFile } from "./markdown";
-import { normalizeCategory, type DraftPost, type PublishedPost } from "./types";
+import {
+  CATEGORY_PAGE_MAP,
+  dedupeCategories,
+  isCategoryMatch,
+  normalizeCategory,
+  resolveCategoryQuery,
+} from "./categories";
+import type { DraftPost, PublishedPost } from "./types";
 
 const postsDir = path.join(process.cwd(), "src", "content", "posts");
 
@@ -32,21 +40,25 @@ async function resolvePublishedPostFile(slug: string) {
   return null;
 }
 
+function toPublishedPost(raw: string, fallbackSlug: string) {
+  const { meta, content } = parseMarkdownFile(raw, fallbackSlug);
+  if (meta.status !== "published") return null;
+
+  return {
+    ...meta,
+    category: normalizeCategory(meta.category),
+    status: "published" as const,
+    content,
+    readingTime: estimateReadingTime(content),
+  };
+}
+
 export const getPublishedPosts = cache(async (): Promise<PublishedPost[]> => {
   const files = await readPostFiles();
   const posts = await Promise.all(
     files.map(async (file) => {
       const raw = await fs.readFile(path.join(postsDir, file), "utf8");
-      const { meta, content } = parseMarkdownFile(raw, file.replace(/\.(mdx?|MDX?)$/, ""));
-      if (meta.status !== "published") return null;
-
-      return {
-        ...meta,
-        category: normalizeCategory(meta.category),
-        status: "published" as const,
-        content,
-        readingTime: estimateReadingTime(content),
-      };
+      return toPublishedPost(raw, file.replace(/\.(mdx?|MDX?)$/, ""));
     }),
   );
 
@@ -60,6 +72,15 @@ export async function getPublishedPost(slug: string) {
   const post = posts.find((item) => item.slug === slug);
   if (!post) notFound();
   return post;
+}
+
+export async function getPublishedPostsByCategory(category?: string | null) {
+  const posts = await getPublishedPosts();
+  return posts.filter((post) => isCategoryMatch(post.category, category));
+}
+
+export async function getPublishedPostsForSection(section: keyof typeof CATEGORY_PAGE_MAP) {
+  return getPublishedPostsByCategory(CATEGORY_PAGE_MAP[section]);
 }
 
 export async function materializePublishedPostDraft(slug: string): Promise<DraftPost | null> {
@@ -80,12 +101,21 @@ export async function materializePublishedPostDraft(slug: string): Promise<Draft
   };
 }
 
-export async function getCategories() {
+export async function getPublicCategories() {
   const posts = await getPublishedPosts();
-  return [...new Set(posts.map((post) => normalizeCategory(post.category)).filter(Boolean))].sort();
+  return dedupeCategories(posts.map((post) => post.category));
+}
+
+export async function getAdminCategories() {
+  const [published, drafts] = await Promise.all([getPublishedPosts(), listDrafts()]);
+  return dedupeCategories([...published.map((post) => post.category), ...drafts.map((draft) => draft.category)]);
 }
 
 export async function getTags() {
   const posts = await getPublishedPosts();
-  return [...new Set(posts.flatMap((post) => post.tags))].sort();
+  return [...new Set(posts.flatMap((post) => post.tags))].sort((left, right) => left.localeCompare(right, "zh-CN"));
+}
+
+export function resolvePostsCategoryFilter(category?: string | null) {
+  return resolveCategoryQuery(category);
 }
