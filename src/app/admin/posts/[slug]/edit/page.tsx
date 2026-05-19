@@ -8,7 +8,13 @@ import { getDraft } from "@/lib/services/blob-store";
 
 export default async function EditPostPage({ params }: { params: Promise<{ slug: string }> }) {
   await requireAdmin();
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  let slug: string;
+  try {
+    slug = decodeURIComponent(rawSlug);
+  } catch {
+    slug = rawSlug;
+  }
   const [draft, categories] = await Promise.all([getDraft(slug), getAdminCategories()]);
 
   return (
