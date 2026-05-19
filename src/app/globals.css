@@ -492,6 +492,13 @@ select {
   background: rgba(255, 255, 255, 0.82);
 }
 
+.editor-textarea {
+  width: 100%;
+  min-height: 560px;
+  resize: none;
+  overflow: hidden;
+}
+
 .editor-action-button,
 .editor-primary-button,
 .editor-toolbar-button {

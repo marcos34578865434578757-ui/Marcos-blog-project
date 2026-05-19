@@ -89,6 +89,13 @@ export function PostEditor(props: {
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData>({ headings: [], warnings: [] });
 
+  function autoGrowTextarea() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
   const categoryOptions = useMemo(() => {
     return [...new Set(props.initialCategories.map((item) => normalizeCategory(item)).filter(Boolean))].sort((left, right) =>
       left.localeCompare(right, "zh-CN"),
@@ -390,6 +397,14 @@ export function PostEditor(props: {
   }, [draft.content, isPreviewOpen]);
 
   useEffect(() => {
+    autoGrowTextarea();
+  }, [draft.content]);
+
+  useEffect(() => {
+    autoGrowTextarea();
+  }, []);
+
+  useEffect(() => {
     if (!hasUnsavedChanges) return;
 
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -568,9 +583,12 @@ export function PostEditor(props: {
             <div className="rounded-[28px] border border-white/75 bg-white/40 p-3 shadow-[0_24px_80px_rgba(71,110,91,0.12)] backdrop-blur-2xl">
               <textarea
                 ref={textareaRef}
-                className="min-h-[560px] w-full resize-y rounded-[22px] border border-white/65 bg-white/72 px-5 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition focus:border-accent/45 focus:ring-4 focus:ring-accent/10"
+                className="editor-textarea rounded-[22px] border border-white/65 bg-white/72 px-5 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition focus:border-accent/45 focus:ring-4 focus:ring-accent/10"
                 value={draft.content}
-                onChange={(event) => patch({ content: event.target.value })}
+                onChange={(event) => {
+                  patch({ content: event.target.value });
+                  requestAnimationFrame(autoGrowTextarea);
+                }}
                 onClick={rememberSelection}
                 onKeyUp={rememberSelection}
                 onSelect={rememberSelection}
