@@ -12,7 +12,7 @@ export function MetaPanel(props: {
   tagInput: string;
   draftOnly: boolean;
   onDescriptionChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
+  onCategoryChange: (value: string, raw?: boolean) => void;
   onDateChange: (value: string) => void;
   onTagInputChange: (value: string) => void;
   onAddTags: (tags: string[]) => void;
@@ -113,8 +113,8 @@ export function MetaPanel(props: {
           className="editor-input"
           list="admin-category-options"
           value={props.category}
-          onChange={(event) => props.onCategoryChange(event.target.value)}
-          placeholder="未分类"
+          onChange={(event) => props.onCategoryChange(event.target.value, true)}
+          placeholder="输入新分类名"
         />
         <datalist id="admin-category-options">
           {props.categoryOptions.map((option) => (

@@ -118,11 +118,11 @@ export function PostEditor(props: {
     setError(nextError);
   }
 
-  function patch(update: Partial<DraftPost>, options?: { markDirty?: boolean }) {
+  function patch(update: Partial<DraftPost>, options?: { markDirty?: boolean; raw?: boolean }) {
     setDraft((current) => ({
       ...current,
       ...update,
-      category: normalizeCategory(update.category ?? current.category),
+      category: options?.raw ? (update.category ?? current.category) : normalizeCategory(update.category ?? current.category),
     }));
 
     if (options?.markDirty !== false) {
@@ -618,7 +618,7 @@ export function PostEditor(props: {
             tagInput={tagInput}
             draftOnly={draftOnly}
             onDescriptionChange={(value) => patch({ description: value })}
-            onCategoryChange={(value) => patch({ category: value || DEFAULT_CATEGORY })}
+            onCategoryChange={(value, raw) => patch({ category: value }, { raw })}
             onDateChange={(value) => patch({ date: value })}
             onTagInputChange={setTagInput}
             onAddTags={addTags}
