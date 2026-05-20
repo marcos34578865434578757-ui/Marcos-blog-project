@@ -116,6 +116,30 @@ export async function deleteDraft(slug: string) {
   await del(draftPath(slug));
 }
 
+export async function deleteDraftByPathname(pathname: string) {
+  requireBlobToken();
+  try {
+    await del(pathname);
+  } catch {}
+}
+
+export async function listDraftsWithPathnames() {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return [];
+  const result = await list({ prefix: draftsPrefix, limit: 1000 });
+  const entries = await Promise.all(
+    result.blobs
+      .filter((blob) => blob.pathname.endsWith(".json"))
+      .map(async (blob) => {
+        const response = await fetch(blob.url, { cache: "no-store" });
+        if (!response.ok) return null;
+        const draft = normalizeDraft(await response.json());
+        return { ...draft, _pathname: blob.pathname };
+      }),
+  );
+
+  return entries.filter((entry): entry is DraftPost & { _pathname: string } => entry !== null);
+}
+
 export async function uploadPostAsset(params: {
   slug: string;
   file: Blob;

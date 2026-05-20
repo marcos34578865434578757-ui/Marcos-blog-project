@@ -40,10 +40,10 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ slug: s
     await requireAdminApi();
     const { slug } = await params;
     const published = (await getPublishedPosts()).find((post) => post.slug === slug);
-    if (!published) return fail("Published post not found", 404);
+    if (!published) return ok({ deleted: true });
 
     const result = await deletePublishedPostFromGithub(slug);
-    if (!result) return fail("Published post not found", 404);
+    if (!result) return ok({ deleted: true });
 
     const existingDraft = await getDraft(slug);
     if (existingDraft) {

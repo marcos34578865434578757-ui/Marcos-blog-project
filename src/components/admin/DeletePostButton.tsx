@@ -7,9 +7,10 @@ import { useState } from "react";
 type DeletePostButtonProps = {
   slug: string;
   kind: "draft" | "published";
+  pathname?: string;
 };
 
-export function DeletePostButton({ slug, kind }: DeletePostButtonProps) {
+export function DeletePostButton({ slug, kind, pathname }: DeletePostButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
@@ -21,9 +22,10 @@ export function DeletePostButton({ slug, kind }: DeletePostButtonProps) {
     setIsDeleting(true);
     setError("");
 
-    const response = await fetch(kind === "draft" ? `/api/admin/drafts/${slug}` : `/api/admin/posts/${slug}`, {
-      method: "DELETE",
-    });
+    const deleteUrl = kind === "draft"
+      ? `/api/admin/drafts/${slug}${pathname ? `?pathname=${encodeURIComponent(pathname)}` : ""}`
+      : `/api/admin/posts/${slug}`;
+    const response = await fetch(deleteUrl, { method: "DELETE" });
     const result = await response.json();
     setIsDeleting(false);
 

@@ -32,14 +32,27 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     await requireAdminApi();
     const { slug } = await params;
-    const draft = await getDraft(slug);
-    if (!draft) return fail("Draft not found", 404);
+    const url = new URL(request.url);
+    const pathname = url.searchParams.get("pathname");
 
-    await deleteDraft(slug);
+    const draft = await getDraft(slug);
+    if (draft) {
+      await deleteDraft(slug);
+      return ok({ deleted: true });
+    }
+
+    if (pathname) {
+      try {
+        const { del } = await import("@vercel/blob");
+        await del(pathname);
+      } catch {}
+      return ok({ deleted: true });
+    }
+
     return ok({ deleted: true });
   } catch (error) {
     return fail(getErrorMessage(error), error instanceof Error && error.message === "Unauthorized" ? 401 : 500);

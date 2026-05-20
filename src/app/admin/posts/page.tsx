@@ -6,7 +6,7 @@ import { MaterializeDraftButton } from "@/components/admin/MaterializeDraftButto
 import { requireAdmin } from "@/lib/admin/auth";
 import { getPublishedPosts } from "@/lib/content/posts";
 import { normalizeCategory } from "@/lib/content/types";
-import { listDrafts } from "@/lib/services/blob-store";
+import { listDraftsWithPathnames } from "@/lib/services/blob-store";
 
 function getStatusMessage(deleted?: string | string[]) {
   const value = Array.isArray(deleted) ? deleted[0] : deleted;
@@ -19,7 +19,7 @@ function getStatusMessage(deleted?: string | string[]) {
 export default async function AdminPostsPage(props: { searchParams: Promise<{ deleted?: string | string[] }> }) {
   await requireAdmin();
   const searchParams = await props.searchParams;
-  const [published, drafts] = await Promise.all([getPublishedPosts(), listDrafts()]);
+  const [published, drafts] = await Promise.all([getPublishedPosts(), listDraftsWithPathnames()]);
   const statusMessage = getStatusMessage(searchParams.deleted);
 
   return (
@@ -67,7 +67,7 @@ export default async function AdminPostsPage(props: { searchParams: Promise<{ de
                         <Link className="font-medium text-accent hover:text-accent-strong" href={`/admin/posts/${post.slug}/edit`}>
                           编辑
                         </Link>
-                        <DeletePostButton kind="draft" slug={post.slug} />
+                        <DeletePostButton kind="draft" slug={post.slug} pathname={post._pathname} />
                       </div>
                     </td>
                   </tr>
