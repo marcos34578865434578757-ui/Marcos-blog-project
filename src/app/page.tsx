@@ -12,7 +12,7 @@ const HOME_CATEGORY_LIMIT = 10;
 
 export default async function HomePage() {
   const [posts, categories] = await Promise.all([getPublishedPosts(), getPublicCategories()]);
-  const latest = posts.slice(0, 4);
+  const latest = posts.slice(0, 6);
 
   return (
     <>
@@ -68,19 +68,23 @@ export default async function HomePage() {
           </aside>
         </section>
 
-        <section className="grid gap-10 py-12 md:grid-cols-[0.32fr_0.68fr]">
-          <div>
+        <section className="py-12">
+          <div className="mb-8">
             <p className="text-sm uppercase tracking-[0.18em] text-accent">Latest</p>
             <h2 className="mt-2 text-2xl font-semibold">最新文章</h2>
             <p className="mt-3 text-sm leading-6 text-muted">这里只展示已发布内容，后台草稿不会公开。</p>
           </div>
-          <div className="soft-panel p-6">
-            {latest.length > 0 ? (
-              latest.map((post) => <PostCard key={post.slug} post={post} />)
-            ) : (
+          {latest.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {latest.map((post) => (
+                <PostCard key={post.slug} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="soft-panel p-6">
               <p className="text-muted">还没有发布文章。先去后台创建或导入内容，发布后就会出现在这里。</p>
-            )}
-          </div>
+            </div>
+          )}
         </section>
 
         {categories.length > 0 ? (
