@@ -4,9 +4,10 @@ import type { PublishedPost } from "@/lib/content/types";
 
 export function PostCard({ post }: { post: PublishedPost }) {
   return (
-    <article className="group overflow-hidden rounded-md border border-line bg-surface transition hover:border-accent">
+    <article className="group relative overflow-hidden rounded-md border border-white/50 bg-surface/50 backdrop-blur-sm shadow-[0_8px_32px_rgba(71,110,91,0.08)] transition hover:border-accent/60 hover:shadow-[0_12px_40px_rgba(71,110,91,0.14)]">
+      <div className="absolute inset-0 rounded-md border border-white/40 pointer-events-none" />
       {post.cover ? (
-        <div className="relative aspect-[16/9] w-full overflow-hidden">
+        <div className="relative mx-4 mt-4 aspect-[16/9] overflow-hidden rounded-lg">
           <Image
             src={post.cover}
             alt={post.title}
