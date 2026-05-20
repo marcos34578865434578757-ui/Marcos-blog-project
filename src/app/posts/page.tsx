@@ -17,7 +17,8 @@ export default async function PostsPage({
 }) {
   const params = await searchParams;
   const activeCategory = resolvePostsCategoryFilter(params.category);
-  const [posts, categories, tags] = await Promise.all([getPublishedPosts(), getPublicCategories(), getTags()]);
+  const [allPosts, categories, tags] = await Promise.all([getPublishedPosts(), getPublicCategories(), getTags()]);
+  const posts = allPosts.slice(0, 6);
   const filtered = posts.filter((post) => {
     const categoryOk = activeCategory ? post.category === activeCategory : true;
     const tagOk = params.tag ? post.tags.includes(params.tag) : true;
@@ -41,7 +42,11 @@ export default async function PostsPage({
           </aside>
           <div className="soft-panel p-6">
             {filtered.length > 0 ? (
-              filtered.map((post) => <PostCard key={post.slug} post={post} />)
+              <div className="grid gap-6 md:grid-cols-2">
+                {filtered.map((post) => (
+                  <PostCard key={post.slug} post={post} />
+                ))}
+              </div>
             ) : (
               <p className="text-muted">没有匹配的已发布文章。</p>
             )}
