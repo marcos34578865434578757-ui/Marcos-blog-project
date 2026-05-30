@@ -40,7 +40,9 @@ function normalizeDraft(draft: unknown) {
 async function readDraftByPath(pathname: string) {
   try {
     const blob = await head(pathname);
-    const response = await fetch(blob.url, { cache: "no-store" });
+    const url = new URL(blob.url);
+    url.searchParams.set("ts", Date.now().toString());
+    const response = await fetch(url.toString(), { cache: "no-store" });
     if (!response.ok) return null;
     return normalizeDraft(await response.json());
   } catch (error) {
@@ -64,7 +66,9 @@ export async function listDrafts() {
     result.blobs
       .filter((blob) => blob.pathname.endsWith(".json"))
       .map(async (blob) => {
-        const response = await fetch(blob.url, { cache: "no-store" });
+        const url = new URL(blob.url);
+        url.searchParams.set("ts", Date.now().toString());
+        const response = await fetch(url.toString(), { cache: "no-store" });
         if (!response.ok) return null;
         return normalizeDraft(await response.json());
       }),
@@ -130,7 +134,9 @@ export async function listDraftsWithPathnames() {
     result.blobs
       .filter((blob) => blob.pathname.endsWith(".json"))
       .map(async (blob) => {
-        const response = await fetch(blob.url, { cache: "no-store" });
+        const url = new URL(blob.url);
+        url.searchParams.set("ts", Date.now().toString());
+        const response = await fetch(url.toString(), { cache: "no-store" });
         if (!response.ok) return null;
         const draft = normalizeDraft(await response.json());
         return { ...draft, _pathname: blob.pathname };
