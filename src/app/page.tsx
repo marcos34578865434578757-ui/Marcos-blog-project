@@ -6,12 +6,16 @@ import { AnimatedHeroTitle } from "@/components/AnimatedHeroTitle";
 import { PostCard } from "@/components/PostCard";
 import { SiteHeader } from "@/components/SiteHeader";
 import { categoryToQueryValue } from "@/lib/content/categories";
-import { getPublicCategories, getPublishedPosts } from "@/lib/content/posts";
+import { getPublicCategories, getPublishedPosts, getTags } from "@/lib/content/posts";
 
 const HOME_CATEGORY_LIMIT = 10;
 
 export default async function HomePage() {
-  const [posts, categories] = await Promise.all([getPublishedPosts(), getPublicCategories()]);
+  const [posts, categories, tags] = await Promise.all([
+    getPublishedPosts(),
+    getPublicCategories(),
+    getTags(),
+  ]);
   const latest = posts.slice(0, 6);
 
   return (
@@ -68,6 +72,50 @@ export default async function HomePage() {
           </aside>
         </section>
 
+        {(categories.length > 0 || tags.length > 0) ? (
+          <section className="border-b border-line py-10 md:py-12">
+            <div className="grid gap-8 md:grid-cols-[240px_1fr]">
+              {/* 分类子版块 */}
+              {categories.length > 0 ? (
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-accent">Topics</p>
+                  <h2 className="mt-2 text-2xl font-semibold">分类</h2>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {categories.map((category) => (
+                      <Link
+                        key={category}
+                        className="btn-secondary w-full justify-start text-left"
+                        href={`/posts?category=${encodeURIComponent(categoryToQueryValue(category))}`}
+                      >
+                        {category}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* 标签子版块 */}
+              {tags.length > 0 ? (
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-accent">Tags</p>
+                  <h2 className="mt-2 text-2xl font-semibold">标签</h2>
+                  <div className="mt-5 flex flex-wrap gap-2.5">
+                    {tags.map((tag) => (
+                      <Link
+                        key={tag}
+                        className="status-pill text-sm py-1.5 px-3.5 hover:border-accent hover:text-accent-strong"
+                        href={`/posts?tag=${encodeURIComponent(tag)}`}
+                      >
+                        #{tag}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
         <section className="py-12">
           <div className="mb-8">
             <p className="text-sm uppercase tracking-[0.18em] text-accent">Latest</p>
@@ -85,24 +133,6 @@ export default async function HomePage() {
             </div>
           )}
         </section>
-
-        {categories.length > 0 ? (
-          <section className="border-t border-line pt-10">
-            <p className="text-sm uppercase tracking-[0.18em] text-accent">Topics</p>
-            <h2 className="mt-2 text-2xl font-semibold">分类</h2>
-            <div className="mt-5 flex flex-wrap gap-3">
-              {categories.slice(0, HOME_CATEGORY_LIMIT).map((category) => (
-                <Link
-                  key={category}
-                  className="btn-secondary"
-                  href={`/posts?category=${encodeURIComponent(categoryToQueryValue(category))}`}
-                >
-                  {category}
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
       </main>
     </>
   );

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { AlertTriangle, CheckCircle2, Loader2, Save, Send, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
@@ -89,6 +89,16 @@ export function PostEditor(props: {
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData>({ headings: [], warnings: [] });
 
+  const [localCategories, setLocalCategories] = useState<string[]>(() => {
+    const combined = [...props.initialCategories, initialDraft.category];
+    return [...new Set(combined.map((item) => normalizeCategory(item)).filter(Boolean))];
+  });
+  const [isPreviewActive, setIsPreviewActive] = useState(false);
+
+  function togglePreview() {
+    setIsPreviewActive((prev) => !prev);
+  }
+
   function autoGrowTextarea() {
     const el = textareaRef.current;
     if (!el) return;
@@ -97,10 +107,8 @@ export function PostEditor(props: {
   }
 
   const categoryOptions = useMemo(() => {
-    return [...new Set(props.initialCategories.map((item) => normalizeCategory(item)).filter(Boolean))].sort((left, right) =>
-      left.localeCompare(right, "zh-CN"),
-    );
-  }, [props.initialCategories]);
+    return [...localCategories].sort((left, right) => left.localeCompare(right, "zh-CN"));
+  }, [localCategories]);
 
   const blobUnavailable = !props.initialCapabilities.blobConfigured;
   const githubUnavailable = !props.initialCapabilities.githubConfigured;
@@ -495,8 +503,13 @@ export function PostEditor(props: {
           <button type="button" className="editor-action-button" onClick={onImportClick} disabled={isSaving || isPublishing}>
             导入 MD
           </button>
-          <button type="button" className="editor-action-button" onClick={() => void openPreview()} disabled={isSaving || isPublishing}>
-            预览
+          <button
+            type="button"
+            className={`editor-action-button ${isPreviewActive ? "border-accent bg-accent-soft text-accent-strong" : ""}`}
+            onClick={togglePreview}
+            disabled={isSaving || isPublishing}
+          >
+            {isPreviewActive ? "关闭预览" : "预览"}
           </button>
           <button type="button" className="editor-action-button" onClick={() => void saveDraft()} disabled={saveDisabled}>
             {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
@@ -530,7 +543,7 @@ export function PostEditor(props: {
         {message ? <StatusBanner icon={<CheckCircle2 size={18} />} tone="success" title="操作成功" body={message} /> : null}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]">
+      <div className={`grid gap-6 ${isPreviewActive ? "grid-cols-1" : "xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.95fr)]"}`}>
         <section className="editor-card space-y-5 p-6">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
             <label className="space-y-2">
@@ -574,28 +587,48 @@ export function PostEditor(props: {
               </span>
             </div>
 
-            <MarkdownToolbar
-              onCommand={applyCommand}
-              onUploadImage={() => fileRef.current?.click()}
-              disabled={isUploadingContentImage || isSaving || blobUnavailable}
-            />
+            <div className="grid gap-4 md:grid-cols-[auto_1fr] items-start">
+              <div className="md:sticky md:top-6 z-10 self-start">
+                <MarkdownToolbar
+                  orientation="vertical"
+                  onCommand={applyCommand}
+                  onUploadImage={() => fileRef.current?.click()}
+                  disabled={isUploadingContentImage || isSaving || blobUnavailable}
+                  isPreviewOpen={isPreviewActive}
+                  onTogglePreview={togglePreview}
+                />
+              </div>
 
-            <div className="rounded-[28px] border border-white/75 bg-white/40 p-3 shadow-[0_24px_80px_rgba(71,110,91,0.12)] backdrop-blur-2xl">
-              <textarea
-                ref={textareaRef}
-                className="editor-textarea rounded-[22px] border border-white/65 bg-white/72 px-5 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition focus:border-accent/45 focus:ring-4 focus:ring-accent/10"
-                value={draft.content}
-                onChange={(event) => {
-                  patch({ content: event.target.value });
-                  requestAnimationFrame(autoGrowTextarea);
-                }}
-                onClick={rememberSelection}
-                onKeyUp={rememberSelection}
-                onSelect={rememberSelection}
-                onFocus={rememberSelection}
-                spellCheck={false}
-                placeholder="Markdown 内容"
-              />
+              <div className="space-y-4 flex-1 min-w-0">
+                <div className={isPreviewActive ? "grid gap-6 lg:grid-cols-2" : "w-full"}>
+                  <div className="rounded-[28px] border border-white/75 bg-white/40 p-3 shadow-[0_24px_80px_rgba(71,110,91,0.12)] backdrop-blur-2xl">
+                    <textarea
+                      ref={textareaRef}
+                      className="editor-textarea rounded-[22px] border border-white/65 bg-white/72 px-5 py-4 font-mono text-[15px] leading-7 text-foreground outline-none transition focus:border-accent/45 focus:ring-4 focus:ring-accent/10 w-full"
+                      value={draft.content}
+                      onChange={(event) => {
+                        patch({ content: event.target.value });
+                        requestAnimationFrame(autoGrowTextarea);
+                      }}
+                      onClick={rememberSelection}
+                      onKeyUp={rememberSelection}
+                      onSelect={rememberSelection}
+                      onFocus={rememberSelection}
+                      spellCheck={false}
+                      placeholder="Markdown 内容"
+                    />
+                  </div>
+
+                  {isPreviewActive && (
+                    <div className="editor-card prose-blog p-6 overflow-y-auto rounded-[28px] border border-white/75 bg-white/40 shadow-[0_24px_80px_rgba(71,110,91,0.12)] backdrop-blur-2xl min-h-[560px] max-h-[85vh] sticky top-6">
+                      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+                        实时预览 - {draft.title || "未命名"}
+                      </div>
+                      <MarkdownBody content={draft.content || "*这里显示实时预览内容*"} />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -618,7 +651,13 @@ export function PostEditor(props: {
             tagInput={tagInput}
             draftOnly={draftOnly}
             onDescriptionChange={(value) => patch({ description: value })}
-            onCategoryChange={(value, raw) => patch({ category: value }, { raw })}
+            onCategoryChange={(value, raw) => {
+              const normalized = normalizeCategory(value);
+              if (normalized && !localCategories.includes(normalized)) {
+                setLocalCategories((prev) => [...prev, normalized]);
+              }
+              patch({ category: value }, { raw });
+            }}
             onDateChange={(value) => patch({ date: value })}
             onTagInputChange={setTagInput}
             onAddTags={addTags}

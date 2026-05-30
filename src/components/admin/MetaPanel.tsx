@@ -1,6 +1,7 @@
 "use client";
 
-import { Tag, X } from "lucide-react";
+import { useState } from "react";
+import { Tag, X, Plus, Check } from "lucide-react";
 import { parseTagInput } from "@/lib/admin/markdown-editor";
 
 export function MetaPanel(props: {
@@ -19,6 +20,30 @@ export function MetaPanel(props: {
   onRemoveTag: (tag: string) => void;
   onDraftOnlyChange: (next: boolean) => void;
 }) {
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+
+  function handleConfirmNewCategory() {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      setCategoryError("分类名称不能为空");
+      return;
+    }
+    const isDuplicate = props.categoryOptions.some(
+      (opt) => opt.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (isDuplicate) {
+      setCategoryError("分类名称已存在");
+      return;
+    }
+
+    props.onCategoryChange(trimmed);
+    setIsCreatingCategory(false);
+    setNewCategoryName("");
+    setCategoryError("");
+  }
+
   function flushTags() {
     const nextTags = parseTagInput(props.tagInput);
     if (nextTags.length > 0) {
@@ -109,18 +134,63 @@ export function MetaPanel(props: {
           </div>
         ) : null}
 
-        <input
-          className="editor-input"
-          list="admin-category-options"
-          value={props.category}
-          onChange={(event) => props.onCategoryChange(event.target.value, true)}
-          placeholder="输入新分类名"
-        />
-        <datalist id="admin-category-options">
-          {props.categoryOptions.map((option) => (
-            <option key={option} value={option} />
-          ))}
-        </datalist>
+        {!isCreatingCategory ? (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/80 bg-white/35 px-3 py-1.5 text-sm text-muted transition hover:border-accent/60 hover:bg-white/45 hover:text-accent-strong"
+            onClick={() => {
+              setIsCreatingCategory(true);
+              setNewCategoryName("");
+              setCategoryError("");
+            }}
+          >
+            <Plus size={14} />
+            新建分类
+          </button>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <input
+                className={`editor-input flex-1 ${categoryError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : ""}`}
+                value={newCategoryName}
+                onChange={(event) => {
+                  setNewCategoryName(event.target.value);
+                  if (categoryError) setCategoryError("");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleConfirmNewCategory();
+                  } else if (event.key === "Escape") {
+                    event.preventDefault();
+                    setIsCreatingCategory(false);
+                  }
+                }}
+                placeholder="输入新分类名"
+                autoFocus
+              />
+              <button
+                type="button"
+                className="flex size-9 items-center justify-center rounded-full border border-emerald-200/80 bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100/80 transition shrink-0"
+                onClick={handleConfirmNewCategory}
+                title="确定"
+              >
+                <Check size={16} />
+              </button>
+              <button
+                type="button"
+                className="flex size-9 items-center justify-center rounded-full border border-orange-200/80 bg-orange-50/80 text-orange-700 hover:bg-orange-100/80 transition shrink-0"
+                onClick={() => setIsCreatingCategory(false)}
+                title="取消"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {categoryError ? (
+              <p className="text-xs text-red-500 font-medium pl-1">{categoryError}</p>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <label className="block space-y-2 text-sm">

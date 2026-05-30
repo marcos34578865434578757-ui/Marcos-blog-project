@@ -134,7 +134,8 @@ select {
     border-color 150ms ease,
     background 150ms ease,
     color 150ms ease,
-    transform 150ms ease;
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .btn-primary {
@@ -144,6 +145,12 @@ select {
 
 .btn-primary:hover {
   background: var(--accent-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .btn-secondary {
@@ -155,21 +162,48 @@ select {
 .btn-secondary:hover {
   border-color: var(--accent);
   background: var(--accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .btn-primary:disabled,
 .btn-secondary:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .status-pill {
+  display: inline-block;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface-soft);
   padding: 0.25rem 0.65rem;
   color: var(--muted);
   font-size: 0.75rem;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.status-pill:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.status-pill:active {
+  transform: translateY(0.5px) scale(0.96);
 }
 
 @keyframes card-rise-in {
@@ -578,4 +612,26 @@ select {
   .editor-topbar {
     padding: 1rem;
   }
+}
+
+/* Custom Tooltip Styling */
+.tooltip-custom {
+  position: absolute;
+  z-index: 30;
+  transform: scale(0);
+  transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  background-color: rgba(16, 32, 26, 0.92);
+  color: #ffffff;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.group:hover > .tooltip-custom,
+.group\/tooltip:hover > .tooltip-custom {
+  transform: scale(1);
 }

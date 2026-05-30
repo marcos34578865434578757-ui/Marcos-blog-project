@@ -41,7 +41,11 @@ export function CategoryArchivePage(props: {
 
         <section className="mt-8 soft-panel p-6">
           {props.posts.length > 0 ? (
-            props.posts.map((post) => <PostCard key={post.slug} post={post} />)
+            <div className="grid gap-6 md:grid-cols-2">
+              {props.posts.map((post) => (
+                <PostCard key={post.slug} post={post} />
+              ))}
+            </div>
           ) : (
             <div className="space-y-3 py-4">
               <h2 className="text-xl font-semibold">{props.emptyTitle}</h2>
