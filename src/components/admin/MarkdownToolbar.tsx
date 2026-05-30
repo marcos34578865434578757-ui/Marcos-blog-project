@@ -23,16 +23,16 @@ const toolbarItems: Array<{
   label: string;
   icon: ReactNode;
 }> = [
-  { command: "h2", label: "H2", icon: <Heading2 size={16} /> },
-  { command: "h3", label: "H3", icon: <Heading3 size={16} /> },
-  { command: "bold", label: "粗体", icon: <Bold size={16} /> },
-  { command: "italic", label: "斜体", icon: <Italic size={16} /> },
-  { command: "quote", label: "引用", icon: <Quote size={16} /> },
-  { command: "inline-code", label: "代码", icon: <Code size={16} /> },
-  { command: "code-block", label: "代码块", icon: <FileCode2 size={16} /> },
-  { command: "bulleted-list", label: "列表", icon: <List size={16} /> },
-  { command: "todo-list", label: "待办", icon: <ListTodo size={16} /> },
-  { command: "link", label: "链接", icon: <Link2 size={16} /> },
+  { command: "h2", label: "H2", icon: <Heading2 size={18} /> },
+  { command: "h3", label: "H3", icon: <Heading3 size={18} /> },
+  { command: "bold", label: "粗体", icon: <Bold size={18} /> },
+  { command: "italic", label: "斜体", icon: <Italic size={18} /> },
+  { command: "quote", label: "引用", icon: <Quote size={18} /> },
+  { command: "inline-code", label: "代码", icon: <Code size={18} /> },
+  { command: "code-block", label: "代码块", icon: <FileCode2 size={18} /> },
+  { command: "bulleted-list", label: "列表", icon: <List size={18} /> },
+  { command: "todo-list", label: "待办", icon: <ListTodo size={18} /> },
+  { command: "link", label: "链接", icon: <Link2 size={18} /> },
 ];
 
 export function MarkdownToolbar(props: {
@@ -88,7 +88,7 @@ export function MarkdownToolbar(props: {
           disabled={props.disabled}
           aria-label="上传图片"
         >
-          <ImagePlus size={16} />
+          <ImagePlus size={18} />
           {!isVertical && <span>图片</span>}
           {isVertical && <span className="md:hidden">图片</span>}
         </button>
@@ -120,7 +120,7 @@ export function MarkdownToolbar(props: {
             disabled={props.disabled}
             aria-label={props.isPreviewOpen ? "关闭预览" : "实时预览"}
           >
-            {props.isPreviewOpen ? <EyeOff size={16} /> : <Eye size={16} />}
+            {props.isPreviewOpen ? <EyeOff size={18} /> : <Eye size={18} />}
             {!isVertical && <span>{props.isPreviewOpen ? "关闭预览" : "预览"}</span>}
           </button>
           <span
