@@ -57,14 +57,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               <img className="mt-8 aspect-[16/9] w-full rounded-md border border-line object-cover" src={post.cover} alt="" />
             ) : null}
           </header>
-          <div className="prose-blog mt-8 max-w-3xl rounded-md bg-surface/60">
+          <div className="prose-blog mt-8 max-w-3xl rounded-2xl border border-white/60 bg-white/40 p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
             <MarkdownBody content={post.content} />
           </div>
         </article>
 
         {headings.length > 0 ? (
           <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-md border border-line bg-surface p-5 text-sm">
+            <div className="sticky top-24 rounded-md border border-line bg-surface p-5 text-sm max-h-[calc(100vh-120px)] overflow-y-auto">
               <p className="mb-3 font-semibold">目录</p>
               <nav className="space-y-2 text-muted">
                 {headings.map((heading) => (

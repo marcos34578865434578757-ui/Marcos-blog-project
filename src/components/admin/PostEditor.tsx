@@ -604,7 +604,7 @@ export function PostEditor(props: {
                 />
               </div>
 
-              <div className="fixed left-4 xl:left-8 top-[60%] z-20 -translate-y-1/2 hidden lg:block">
+              <div className="fixed left-4 xl:left-8 top-[30%] z-20 -translate-y-1/2 hidden lg:block">
                 <MarkdownToolbar
                   orientation="vertical"
                   onCommand={applyCommand}
