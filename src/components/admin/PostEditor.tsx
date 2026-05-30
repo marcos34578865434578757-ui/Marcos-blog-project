@@ -592,8 +592,19 @@ export function PostEditor(props: {
               </span>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-[auto_1fr] items-start">
-              <div className="md:sticky md:top-6 z-10 self-start">
+            <div className="flex flex-col gap-4">
+              <div className="lg:hidden">
+                <MarkdownToolbar
+                  orientation="horizontal"
+                  onCommand={applyCommand}
+                  onUploadImage={() => fileRef.current?.click()}
+                  disabled={isUploadingContentImage || isSaving || blobUnavailable}
+                  isPreviewOpen={isPreviewOpen}
+                  onTogglePreview={toggleModalPreview}
+                />
+              </div>
+
+              <div className="fixed left-4 xl:left-8 top-1/2 z-20 -translate-y-1/2 hidden lg:block">
                 <MarkdownToolbar
                   orientation="vertical"
                   onCommand={applyCommand}
@@ -687,7 +698,7 @@ export function PostEditor(props: {
             </div>
 
             <div className="grid max-h-[calc(90vh-88px)] gap-6 overflow-auto p-6 xl:grid-cols-[minmax(260px,0.8fr)_minmax(0,1.6fr)]">
-              <section className="editor-card h-fit space-y-5 p-5">
+              <section className="editor-card h-fit space-y-5 p-5 sticky top-0 max-h-[calc(90vh-136px)] overflow-y-auto">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="font-semibold text-foreground">预览辅助信息</h3>
                   {isPreviewLoading ? <Loader2 className="animate-spin text-muted" size={16} /> : null}
